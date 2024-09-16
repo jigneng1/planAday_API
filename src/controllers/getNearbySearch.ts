@@ -1,4 +1,6 @@
 import axios from "axios";
+import { v4 as uuidv4 } from "uuid";
+import { redisClient } from "..";
 
 export const getNearbySearch = async (
   lad: string,
@@ -27,7 +29,7 @@ export const getNearbySearch = async (
     "Content-Type": "application/json",
     "X-Goog-Api-Key": apiKey,
     "X-Goog-FieldMask":
-      "places.id,places.displayName,places.primaryType,places.shortFormattedAddress,places.currentOpeningHours",
+      "places.id,places.displayName,places.primaryType,places.shortFormattedAddress",
   };
 
   // Construct the Google Maps Places API URL
@@ -35,14 +37,18 @@ export const getNearbySearch = async (
 
   try {
     const response = await axios.post(url, data, { headers });
+
+    // store in cache for 24 hours
+    const cacheKey = uuidv4(); // cache key
+    await redisClient.setEx(cacheKey, 86400, JSON.stringify(response.data));
     return {
       status: "success",
-      data: response.data,
+      id: cacheKey,
     };
   } catch (error: any) {
     return {
       status: "error",
-      message: error.message,
+      message: error,
     };
   }
 };

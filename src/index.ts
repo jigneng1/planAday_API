@@ -14,20 +14,20 @@ console.log("🚀 Connected to Redis");
 
 const app = new Elysia()
   .get("/", () => "Welcome to Plan A Day web API")
-  .get("/getGeneratePlace/:key", ({ params }) => {
-    const { key } = params;
-    return getGeneratePlace(key);
+  .get("/randomPlaces", ({ query: { id, places } }) => {
+    if (id == undefined || places == undefined) {
+      return {
+        status: "error",
+        message: "Please provide id and places",
+      };
+    }
+    return getGeneratePlace(id, places);
   })
   .post(
     "/nearby-search",
     async ({ body }) => {
       const { lad, lng, category } = body;
-      const cacheKey = `${lad}-${lng}-${category.join(",")}`;
-      const result = await getNearbySearch(lad, lng, category);
-      await redisClient.setEx(cacheKey, 3600, JSON.stringify(result));
-      return {
-        message: "success",
-      };
+      return getNearbySearch(lad, lng, category);
     },
     {
       body: t.Object({

@@ -1,11 +1,15 @@
 import { redisClient } from "..";
 
-export const getGeneratePlace = async (key: string) => {
-  const cachedData = await redisClient.get(key);
+export const getGeneratePlace = async (id: string, places: string) => {
+  const cachedData = await redisClient.get(id);
   if (cachedData) {
+    const result = JSON.parse(cachedData);
+    const randomPlaces = result.places
+      .sort(() => Math.random() - 0.5)
+      .slice(0, places);
     return {
       status: "success",
-      data: JSON.parse(cachedData),
+      data: randomPlaces,
     };
   } else {
     return {
