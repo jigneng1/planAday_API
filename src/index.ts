@@ -40,5 +40,5 @@ const app = new Elysia()
   .listen(3000);
 
 console.log(
-  `🦊 WebAPI is running at ${app.server?.hostname}:${app.server?.port}`
+  `🦄 PlanAday API is running at ${app.server?.hostname}:${app.server?.port}`
 );
