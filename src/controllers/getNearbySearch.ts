@@ -57,11 +57,11 @@ export const getNearbySearch = async (
     );
 
     // store in cache for 24 hours
-    //const cacheKey = uuidv4(); // cache key
-    //await redisClient.setEx(cacheKey, 86400, JSON.stringify(formattedResponse));
+    const cacheKey = uuidv4(); // cache key
+    await redisClient.setEx(cacheKey, 86400, JSON.stringify(formattedResponse));
     return {
       status: "success",
-      data: formattedResponse,
+      id: cacheKey,
     };
   } catch (error: any) {
     return {
