@@ -4,7 +4,7 @@ export const getGeneratePlace = async (id: string, places: string) => {
   const cachedData = await redisClient.get(id);
   if (cachedData) {
     const result = JSON.parse(cachedData);
-    const randomPlaces = result.places
+    const randomPlaces = result
       .sort(() => Math.random() - 0.5)
       .slice(0, places);
     return {
