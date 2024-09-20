@@ -66,7 +66,7 @@ export const getNearbySearch = async (
   } catch (error: any) {
     return {
       status: "error",
-      message: error,
+      message: error || "something went wrong",
     };
   }
 };

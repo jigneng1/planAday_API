@@ -3,6 +3,8 @@ import { getNearbySearch } from "./controllers/getNearbySearch";
 import { createClient } from "redis";
 import { getGeneratePlace } from "./controllers/getGeneratePlace";
 import getPlaceDetailById from "./controllers/getPlaceDetailById";
+import swagger from "@elysiajs/swagger";
+import getTimeTravelByPlaceId from "./controllers/getTimeTravel";
 
 // Connect to Redis
 export const redisClient = createClient({
@@ -13,6 +15,8 @@ await redisClient.connect();
 console.log("🚀 Connected to Redis");
 
 const app = new Elysia()
+  // Use Swagger
+  .use(swagger())
   .get("/", () => "Welcome to Plan A Day web API")
   .get("/placeDetail/:id", ({ params: { id } }) => {
     if (id == undefined) {
@@ -31,6 +35,15 @@ const app = new Elysia()
       };
     }
     return getGeneratePlace(id, places);
+  })
+  .get("/timeTravel", ({ query: { origin, destination } }) => {
+    if (origin == undefined || destination == undefined) {
+      return {
+        status: "error",
+        message: "Please provide origin and destination",
+      };
+    }
+    return getTimeTravelByPlaceId(origin, destination);
   })
   .post(
     "/nearby-search",

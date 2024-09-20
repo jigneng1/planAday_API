@@ -6,6 +6,9 @@ export interface IPlaceItem {
   };
   primaryType: string;
   shortFormattedAddress: string;
+  primaryTypeDisplayName: {
+    text: string;
+  };
   photos: [
     {
       name: string;
