@@ -14,7 +14,7 @@ export const getNearbySearch = async (
 
   const data = {
     includedTypes: category,
-    maxResultCount: 10,
+    maxResultCount: 20,
     locationRestriction: {
       circle: {
         center: {

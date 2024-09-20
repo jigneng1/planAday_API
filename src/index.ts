@@ -1,8 +1,8 @@
 import { Elysia, t } from "elysia";
-import axios from "axios";
 import { getNearbySearch } from "./controllers/getNearbySearch";
 import { createClient } from "redis";
 import { getGeneratePlace } from "./controllers/getGeneratePlace";
+import getPlaceDetailById from "./controllers/getPlaceDetailById";
 
 // Connect to Redis
 export const redisClient = createClient({
@@ -14,6 +14,15 @@ console.log("🚀 Connected to Redis");
 
 const app = new Elysia()
   .get("/", () => "Welcome to Plan A Day web API")
+  .get("/placeDetail/:id", ({ params: { id } }) => {
+    if (id == undefined) {
+      return {
+        status: "error",
+        message: "Please provide id",
+      };
+    }
+    return getPlaceDetailById(id);
+  })
   .get("/randomPlaces", ({ query: { id, places } }) => {
     if (id == undefined || places == undefined) {
       return {
