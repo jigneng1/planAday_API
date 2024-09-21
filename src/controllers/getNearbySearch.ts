@@ -45,7 +45,23 @@ export const getNearbySearch = async (
     // Format JSON before keeping in cache
     const formattedResponse = await Promise.all(
       response.data.places.map(async (item: IPlaceItem) => {
-        const photoUrl = await getPhotoFromGoogle(item.photos[0].name);
+        let photoUrl = null;
+        if (
+          item.photos &&
+          Array.isArray(item.photos) &&
+          item.photos.length > 0
+        ) {
+          try {
+            // Fetch the photo URL
+            photoUrl = await getPhotoFromGoogle(item.photos[0].name);
+          } catch (error) {
+            console.error("Error fetching photo:", error);
+          }
+        } else {
+          console.warn(
+            `No photo available for place: ${item.displayName.text}`
+          );
+        }
         return {
           id: item.id,
           displayName: item.displayName.text,
