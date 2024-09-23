@@ -19,8 +19,23 @@ const getPlaceDetailById = async (id: string) => {
       headers,
     });
 
-    const photoName = response.data.photos[0].name;
-    const photoUrl = await getPhotoFromGoogle(photoName);
+    let photoUrl = null;
+    if (
+      response.data.photos &&
+      Array.isArray(response.data.photos) &&
+      response.data.photos.length > 0
+    ) {
+      try {
+        // Fetch the photo URL
+        photoUrl = await getPhotoFromGoogle(response.data.photos[0].name);
+      } catch (error) {
+        console.error("Error fetching photo:", error);
+      }
+    } else {
+      console.warn(
+        `No photo available for place: ${response.data.displayName.text}`
+      );
+    }
     // Format response before returning
     const filteredResponse = {
       id: response.data.id,
