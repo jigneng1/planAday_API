@@ -9,7 +9,7 @@ const getPlaceDetailById = async (id: string) => {
     "Content-Type": "application/json",
     "X-Goog-Api-Key": apiKey,
     "X-Goog-FieldMask":
-      "id,displayName,primaryType,shortFormattedAddress,accessibilityOptions,rating,allowsDogs,liveMusic,parkingOptions,servesBeer,takeout,restroom,evChargeOptions,servesVegetarianFood,currentOpeningHours,nationalPhoneNumber,photos",
+      "id,displayName,primaryType,shortFormattedAddress,accessibilityOptions,rating,allowsDogs,liveMusic,parkingOptions,servesBeer,takeout,restroom,evChargeOptions,servesVegetarianFood,currentOpeningHours,nationalPhoneNumber,photos,location",
   };
 
   const url = `https://places.googleapis.com/v1/places/${id}`;
@@ -42,6 +42,7 @@ const getPlaceDetailById = async (id: string) => {
       displayName: response.data.displayName.text,
       primaryType: response.data.primaryType,
       shortFormattedAddress: response.data.shortFormattedAddress,
+      location: response.data.location,
       accessibilityOptions: response.data.accessibilityOptions,
       rating: response.data.rating,
       allowsDogs: response.data.allowsDogs,

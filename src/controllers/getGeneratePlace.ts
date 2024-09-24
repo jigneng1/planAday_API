@@ -7,7 +7,6 @@ export const getGeneratePlace = async (id: string, places: string) => {
     const uniqueType = Array.from(
       new Set(result.map((item: any) => item.primaryType))
     );
-    console.log(uniqueType);
     const randomPlaces = result
       .sort(() => Math.random() - 0.5)
       .slice(0, places);

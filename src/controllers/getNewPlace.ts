@@ -91,9 +91,13 @@ const getNewPlace = async (placeID: string, placesList: string[]) => {
       return !placesList.includes(item.id);
     });
 
+    const randomPlaces = filteredResponse
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 1);
+
     return {
       status: "success",
-      data: filteredResponse[0],
+      data: randomPlaces[0],
     };
   } catch (error: any) {
     return {
