@@ -5,6 +5,7 @@ import { getGeneratePlace } from "./controllers/getGeneratePlace";
 import getPlaceDetailById from "./controllers/getPlaceDetailById";
 import swagger from "@elysiajs/swagger";
 import getTimeTravelByPlaceId from "./controllers/getTimeTravel";
+import getNewPlace from "./controllers/getNewPlace";
 
 // Connect to Redis
 export const redisClient = createClient({
@@ -47,7 +48,7 @@ const app = new Elysia()
   })
   .post(
     "/nearby-search",
-    async ({ body }) => {
+    ({ body }) => {
       const { lad, lng, category } = body;
       return getNearbySearch(lad, lng, category);
     },
@@ -56,6 +57,19 @@ const app = new Elysia()
         lad: t.String(),
         lng: t.String(),
         category: t.Array(t.String()),
+      }),
+    }
+  )
+  .post(
+    "/getNewPlace",
+    ({ body }) => {
+      const { placeReplaceId, placesList } = body;
+      return getNewPlace(placeReplaceId, placesList);
+    },
+    {
+      body: t.Object({
+        placeReplaceId: t.String(),
+        placesList: t.Array(t.String()),
       }),
     }
   )
