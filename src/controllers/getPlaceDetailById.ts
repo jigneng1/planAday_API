@@ -54,7 +54,7 @@ const getPlaceDetailById = async (id: string) => {
       evChargeOptions: response.data.evChargeOptions,
       servesVegetarianFood: response.data.servesVegetarianFood,
       currentOpeningHours:
-        response.data.currentOpeningHours.weekdayDescriptions,
+        response.data?.currentOpeningHours?.weekdayDescriptions ?? '',
       nationalPhoneNumber: response.data.nationalPhoneNumber,
       photo: photoUrl,
     };
