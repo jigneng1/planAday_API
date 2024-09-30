@@ -6,6 +6,7 @@ import getPlaceDetailById from "./controllers/getPlaceDetailById";
 import swagger from "@elysiajs/swagger";
 import getTimeTravelByPlaceId from "./controllers/getTimeTravel";
 import getNewPlace from "./controllers/getNewPlace";
+import getGenMorePlace from "./controllers/getGenMorePlace";
 
 // Connect to Redis
 export const redisClient = createClient({
@@ -69,6 +70,20 @@ const app = new Elysia()
     {
       body: t.Object({
         placeReplaceId: t.String(),
+        placesList: t.Array(t.String()),
+      }),
+    }
+  )
+
+  .post(
+    "/getGenMorePlace",
+    ({ body }) => {
+      const { planId, placesList } = body;
+      return getGenMorePlace(planId, placesList);
+    },
+    {
+      body: t.Object({
+        planId: t.String(),
         placesList: t.Array(t.String()),
       }),
     }
