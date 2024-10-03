@@ -10,8 +10,6 @@ RUN bun install
 
 COPY ./src ./src
 
-COPY .env .env
-
 ENV NODE_ENV=production
 
 RUN bun build \
