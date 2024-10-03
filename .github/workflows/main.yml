@@ -1,0 +1,71 @@
+name: ✨ Deploy to production
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    build:
+        name: 🐳 build and push docker image
+        runs-on: ubuntu-latest
+        environment: production
+        timeout-minutes: 5
+        steps:
+            - name: 🫠 Checkout repository
+              uses: actions/checkout@v2
+
+            - name: 🏗️ Set up Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+               node-version: 14
+               
+            - name: Install dependencies
+              run: bun install
+
+            # - name: Build and test
+            #   run: bun test
+            
+            - name: Set up environment variables
+              env:
+                MY_ENV_VAR: ${{ secrets.MY_ENV_VAR }}
+              run: echo "Environment variables set up"
+        
+            - name: login to docker
+              uses: docker/login-action@v2
+              with:
+                  username: ${{secrets.DOCKER_USERNAME}}
+                  password: ${{secrets.DOCKER_PASSWORD}}
+
+            - name: 🏗️ Set up Docker Buildx
+              uses: docker/setup-buildx-action@v2
+
+            - name: ☁️ Build and push
+              uses: docker/build-push-action@v2
+              with:
+                  context: .
+                  file: ./Dockerfile
+                  push: true
+                  tags: ${{secrets.DOCKER_REGISTRY}}/${{secrets.DOCKER_IMAGE}}:latest
+                  build-args: |
+                      MY_ENV_VAR=${{ secrets.MY_ENV_VAR }}
+
+    deploy:
+        name: 🖥️ deploy to server
+        runs-on: ubuntu-latest
+        environment: production
+        timeout-minutes: 5
+        needs: [build]
+        steps:
+            - name: remote ssh
+              uses: appleboy/ssh-action@master
+              with:
+                  host: ${{ secrets.SSH_HOST }}
+                  username: ${{ secrets.SSH_USERNAME }}
+                  password: ${{ secrets.SSH_PASSWORD }}
+                  script: |
+                      docker pull ${{secrets.DOCKER_REGISTRY}}/${{secrets.DOCKER_IMAGE}}:latest
+                      docker stop ${{secrets.CONTAINER_NAME}}
+                      docker rm ${{secrets.CONTAINER_NAME}}
+                      docker run -d --name ${{secrets.CONTAINER_NAME}} -p ${{secrets.DOCKER_PORT}}:3000 ${{secrets.DOCKER_REGISTRY}}/${{secrets.DOCKER_IMAGE}}:latest 
+                      docker system prune -af
