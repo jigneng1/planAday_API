@@ -28,7 +28,8 @@ jobs:
             
             - name: Set up environment variables
               env:
-                MY_ENV_VAR: ${{ secrets.MY_ENV_VAR }} 
+                MY_ENV_VAR: ${{ secrets.MY_ENV_VAR }}
+              run: echo "Environment variables set up"
         
             - name: login to docker
               uses: docker/login-action@v2
