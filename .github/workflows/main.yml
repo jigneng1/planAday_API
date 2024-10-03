@@ -25,6 +25,9 @@ jobs:
 
             # - name: Build and test
             #   run: bun test
+            - name: Set up environment variables
+              env:
+                MY_ENV_VAR: ${{ secrets.MY_ENV_VAR }} 
         
             - name: login to docker
               uses: docker/login-action@v2
@@ -42,6 +45,8 @@ jobs:
                   file: ./Dockerfile
                   push: true
                   tags: ${{secrets.DOCKER_REGISTRY}}/${{secrets.DOCKER_IMAGE}}:latest
+                  build-args: |
+                      MY_ENV_VAR=${{ secrets.MY_ENV_VAR }}
 
     deploy:
         name: 🖥️ deploy to server
