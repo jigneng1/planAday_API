@@ -1,4 +1,4 @@
-import { Elysia, t } from "elysia";
+import { Elysia, error, t } from "elysia";
 import { getNearbySearch } from "./controllers/getNearbySearch";
 import { createClient } from "redis";
 import { getGeneratePlace } from "./controllers/getGeneratePlace";
@@ -21,29 +21,17 @@ const app = new Elysia()
   .use(swagger())
   .get("/", () => "Welcome to Plan A Day web API")
   .get("/placeDetail/:id", ({ params: { id } }) => {
-    if (id == undefined) {
-      return {
-        status: "error",
-        message: "Please provide id",
-      };
-    }
     return getPlaceDetailById(id);
   })
   .get("/randomPlaces", ({ query: { id, places } }) => {
     if (id == undefined || places == undefined) {
-      return {
-        status: "error",
-        message: "Please provide id and places",
-      };
+      return error(400, "Please provide id and places");
     }
     return getGeneratePlace(id, places);
   })
   .get("/timeTravel", ({ query: { origin, destination } }) => {
     if (origin == undefined || destination == undefined) {
-      return {
-        status: "error",
-        message: "Please provide origin and destination",
-      };
+      return error(400, "Please provide origin and destination");
     }
     return getTimeTravelByPlaceId(origin, destination);
   })
