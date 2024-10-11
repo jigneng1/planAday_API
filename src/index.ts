@@ -7,19 +7,72 @@ import swagger from "@elysiajs/swagger";
 import getTimeTravelByPlaceId from "./controllers/getTimeTravel";
 import getNewPlace from "./controllers/getNewPlace";
 import getGenMorePlace from "./controllers/getGenMorePlace";
+import { Client } from "pg";
+import register from "./controllers/auth/register";
+import login from "./controllers/auth/login";
+import jwt from "@elysiajs/jwt";
 
 // Connect to Redis
 export const redisClient = createClient({
-  url: process.env.REDIS_URL || "redis://localhost:6379",
+  url: process.env.REDIS_URL,
 });
 redisClient.on("error", (err) => console.log("Redis Client Error", err));
 await redisClient.connect();
 console.log("🚀 Connected to Redis");
 
+// Connect to PostgreSQL
+export const postgreClient = new Client({
+  connectionString: process.env.DATABASE_URL,
+});
+
+postgreClient
+  .connect()
+  .then(() => {
+    console.log("🐘 Connected to PostgreSQL");
+  })
+  .catch((err) => {
+    console.error("Error connecting to PostgreSQL", err);
+  });
+
 const app = new Elysia()
   // Use Swagger
   .use(swagger())
+  .use(
+    jwt({
+      secret: process.env.JWT_SECRET!,
+      expiresIn: "1d",
+    })
+  )
   .get("/", () => "Welcome to Plan A Day web API")
+
+  .post(
+    "/login",
+    ({ jwt, body }) => {
+      const { username, password } = body;
+      return login(username, password);
+    },
+    {
+      body: t.Object({
+        username: t.String(),
+        password: t.String(),
+      }),
+    }
+  )
+  .post(
+    "/register",
+    ({ body }) => {
+      const { username, password } = body;
+      return register(username, password);
+    },
+    {
+      body: t.Object({
+        username: t.String(),
+        password: t.String(),
+      }),
+    }
+  )
+
+  // PLAN , PLACE ROUTE
   .get("/placeDetail/:id", ({ params: { id } }) => {
     return getPlaceDetailById(id);
   })
