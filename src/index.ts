@@ -32,15 +32,13 @@ export const postgreClient = new Client({
   connectionString: process.env.DATABASE_URL,
 });
 
-postgreClient
+await postgreClient
   .connect()
-  .then(() => {
-    console.log("🐘 Connected to PostgreSQL");
-  })
+  .then(() => console.log("🐘 Connected to PostgreSQL"))
   .catch((err) => {
     console.error("Error connecting to PostgreSQL", err);
+    process.exit(1);
   });
-
 const app = new Elysia();
 // Use Swagger
 app
