@@ -3,11 +3,15 @@ import { v4 as uuidv4 } from "uuid";
 import { redisClient } from "..";
 import { IPlaceItem } from "../models/nearbySearch";
 import getPhotoFromGoogle from "../utils/getPhotoFromGoogle";
+import { isPlaceOpenAtTime } from "../utils/isPlaceAvailable";
 
 export const getNearbySearch = async (
   lad: string,
   lng: string,
-  category: string[]
+  category: string[],
+  day: number,
+  hour: number,
+  minute: number
 ) => {
   // Your Google Maps API Key
   const apiKey = "AIzaSyBKTx5neg3VzAsPMzpEDffGwXROdayD28M";
@@ -31,7 +35,7 @@ export const getNearbySearch = async (
     "Content-Type": "application/json",
     "X-Goog-Api-Key": apiKey,
     "X-Goog-FieldMask":
-      "places.id,places.displayName,places.primaryType,places.shortFormattedAddress,places.photos",
+      "places.id,places.displayName,places.primaryType,places.shortFormattedAddress,places.regularOpeningHours,places.photos",
   };
 
   // Construct the Google Maps Places API URL
@@ -42,9 +46,30 @@ export const getNearbySearch = async (
       headers,
     });
 
+    const availablePlace = response.data.places.filter((place: IPlaceItem) => {
+      if (!place.regularOpeningHours) {
+        console.log("no regular opening hours", place.displayName.text);
+      } else {
+        return isPlaceOpenAtTime(
+          place.regularOpeningHours.periods,
+          day,
+          hour,
+          minute
+        );
+      }
+    });
+
+    // Handle no places available
+    if (availablePlace.length === 0) {
+      return {
+        status: "error",
+        message: "No places available at the given time",
+      };
+    }
+
     // Format JSON before keeping in cache
     const formattedResponse = await Promise.all(
-      response.data.places.map(async (item: IPlaceItem) => {
+      availablePlace.map(async (item: IPlaceItem) => {
         let photoUrl = null;
         if (
           item.photos &&
@@ -78,6 +103,7 @@ export const getNearbySearch = async (
     return {
       status: "success",
       id: cacheKey,
+      placeAvailable: formattedResponse.length,
     };
   } catch (error: any) {
     return {
