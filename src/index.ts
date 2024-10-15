@@ -11,6 +11,13 @@ import { Client } from "pg";
 import register from "./controllers/auth/register";
 import login from "./controllers/auth/login";
 import jwt from "@elysiajs/jwt";
+import cookie from "@elysiajs/cookie";
+
+// check ENV
+if (!process.env.JWT_SECRET) {
+  console.error("JWT_SECRET is required");
+  process.exit(1);
+}
 
 // Connect to Redis
 export const redisClient = createClient({
@@ -34,8 +41,9 @@ postgreClient
     console.error("Error connecting to PostgreSQL", err);
   });
 
-const app = new Elysia()
-  // Use Swagger
+const app = new Elysia();
+// Use Swagger
+app
   .use(swagger())
   .use(
     jwt({
@@ -43,13 +51,33 @@ const app = new Elysia()
       expiresIn: "1d",
     })
   )
-  .get("/", () => "Welcome to Plan A Day web API")
+  .use(cookie())
+  .derive(async ({ jwt, cookie: { token } }) => {
+    const checkAuth = await jwt.verify(token.value);
+    return {
+      checkAuth,
+    };
+  })
 
+  .get("/", () => "Welcome to Plan A Day web API")
   .post(
     "/login",
-    ({ jwt, body }) => {
+    async ({ jwt, body, cookie: { token } }) => {
       const { username, password } = body;
-      return login(username, password);
+      const getUsername = await login(username, password);
+      if (getUsername.status === "error") {
+        return error(400, getUsername);
+      }
+      const getToken = await jwt.sign({ username: getUsername });
+      token.set({
+        value: getToken,
+        httpOnly: true,
+        maxAge: 86400,
+      });
+      return {
+        message: "Login success",
+        token: token.value,
+      };
     },
     {
       body: t.Object({
@@ -71,66 +99,78 @@ const app = new Elysia()
       }),
     }
   )
-
-  // PLAN , PLACE ROUTE
-  .get("/placeDetail/:id", ({ params: { id } }) => {
-    return getPlaceDetailById(id);
-  })
-  .get("/randomPlaces", ({ query: { id, places } }) => {
-    if (id == undefined || places == undefined) {
-      return error(400, "Please provide id and places");
-    }
-    return getGeneratePlace(id, places);
-  })
-  .get("/timeTravel", ({ query: { origin, destination } }) => {
-    if (origin == undefined || destination == undefined) {
-      return error(400, "Please provide origin and destination");
-    }
-    return getTimeTravelByPlaceId(origin, destination);
-  })
-  .post(
-    "/nearby-search",
-    ({ body }) => {
-      const { lad, lng, category } = body;
-      return getNearbySearch(lad, lng, category);
-    },
+  // Middleware ALL Routes
+  .guard(
     {
-      body: t.Object({
-        lad: t.String(),
-        lng: t.String(),
-        category: t.Array(t.String()),
-      }),
-    }
-  )
-  .post(
-    "/getNewPlace",
-    ({ body }) => {
-      const { placeReplaceId, placesList } = body;
-      return getNewPlace(placeReplaceId, placesList);
+      beforeHandle: ({ checkAuth }) => {
+        if (!checkAuth) {
+          return error(401, "Unauthorized");
+        }
+      },
     },
-    {
-      body: t.Object({
-        placeReplaceId: t.String(),
-        placesList: t.Array(t.String()),
-      }),
-    }
-  )
+    (app) =>
+      app
+        .get("/placeDetail/:id", ({ checkAuth, params: { id } }) => {
+          console.log(checkAuth);
+          return getPlaceDetailById(id);
+        })
 
-  .post(
-    "/getGenMorePlace",
-    ({ body }) => {
-      const { planId, placesList } = body;
-      return getGenMorePlace(planId, placesList);
-    },
-    {
-      body: t.Object({
-        planId: t.String(),
-        placesList: t.Array(t.String()),
-      }),
-    }
-  )
-  .listen(3000);
+        .get("/randomPlaces", ({ query: { id, places } }) => {
+          if (id == undefined || places == undefined) {
+            return error(400, "Please provide id and places");
+          }
+          return getGeneratePlace(id, places);
+        })
+        .get("/timeTravel", ({ query: { origin, destination } }) => {
+          if (origin == undefined || destination == undefined) {
+            return error(400, "Please provide origin and destination");
+          }
+          return getTimeTravelByPlaceId(origin, destination);
+        })
+        .post(
+          "/nearby-search",
+          ({ body }) => {
+            const { lad, lng, category } = body;
+            return getNearbySearch(lad, lng, category);
+          },
+          {
+            body: t.Object({
+              lad: t.String(),
+              lng: t.String(),
+              category: t.Array(t.String()),
+            }),
+          }
+        )
+        .post(
+          "/getNewPlace",
+          ({ body }) => {
+            const { placeReplaceId, placesList } = body;
+            return getNewPlace(placeReplaceId, placesList);
+          },
+          {
+            body: t.Object({
+              placeReplaceId: t.String(),
+              placesList: t.Array(t.String()),
+            }),
+          }
+        )
 
-console.log(
-  `🦄 PlanAday API is running at ${app.server?.hostname}:${app.server?.port}`
-);
+        .post(
+          "/getGenMorePlace",
+          ({ body }) => {
+            const { planId, placesList } = body;
+            return getGenMorePlace(planId, placesList);
+          },
+          {
+            body: t.Object({
+              planId: t.String(),
+              placesList: t.Array(t.String()),
+            }),
+          }
+        )
+  )
+  .listen(3000, () => {
+    console.log(
+      `🦄 PlanAday API is running at ${app.server?.hostname}:${app.server?.port}`
+    );
+  });

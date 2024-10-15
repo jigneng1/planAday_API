@@ -21,15 +21,12 @@ const login = async (username: string, password: string) => {
 
     if (comparePassword == false) {
       return {
-        success: false,
+        status: "error",
         payload: "password not correct",
       };
     }
 
-    return {
-      status: "success",
-      message: "Login successfully",
-    };
+    return findUser.rows[0].username;
   } catch (error) {
     return {
       status: "error",
