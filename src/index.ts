@@ -108,8 +108,7 @@ app
     },
     (app) =>
       app
-        .get("/placeDetail/:id", ({ checkAuth, params: { id } }) => {
-          console.log(checkAuth);
+        .get("/placeDetail/:id", ({ params: { id } }) => {
           return getPlaceDetailById(id);
         })
 
