@@ -122,15 +122,25 @@ app
         .post(
           "/nearby-search",
           ({ body }) => {
-            const { lad, lng, category } = body;
-            return getNearbySearch(lad, lng, category);
+            const { lad, lng, category, startDay, startHour, startMinute } = body;
+            return getNearbySearch(
+        lad,
+        lng,
+        category,
+        startDay,
+        startHour,
+        startMinute
+      );
           },
           {
             body: t.Object({
               lad: t.String(),
               lng: t.String(),
               category: t.Array(t.String()),
-            }),
+              startDay: t.Number(),
+        startHour: t.Number(),
+        startMinute: t.Number(),
+      }),
           }
         )
         .post(
