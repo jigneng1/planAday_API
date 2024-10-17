@@ -11,7 +11,7 @@ import { Client } from "pg";
 import register from "./controllers/auth/register";
 import login from "./controllers/auth/login";
 import jwt from "@elysiajs/jwt";
-import cookie from "@elysiajs/cookie";
+import { bearer } from "@elysiajs/bearer";
 
 // check ENV
 if (!process.env.JWT_SECRET) {
@@ -49,9 +49,9 @@ app
       expiresIn: "1d",
     })
   )
-  .use(cookie())
-  .derive(async ({ jwt, cookie: { token } }) => {
-    const checkAuth = await jwt.verify(token.value);
+  .use(bearer())
+  .derive(async ({ jwt, bearer }) => {
+    const checkAuth = await jwt.verify(bearer);
     return {
       checkAuth,
     };
@@ -60,21 +60,16 @@ app
   .get("/", () => "Welcome to Plan A Day web API")
   .post(
     "/login",
-    async ({ jwt, body, cookie: { token } }) => {
+    async ({ jwt, body }) => {
       const { username, password } = body;
       const getUsername = await login(username, password);
       if (getUsername.status === "error") {
         return error(400, getUsername);
       }
       const getToken = await jwt.sign({ username: getUsername });
-      token.set({
-        value: getToken,
-        httpOnly: true,
-        maxAge: 86400,
-      });
       return {
         message: "Login success",
-        token: token.value,
+        token: getToken,
       };
     },
     {
