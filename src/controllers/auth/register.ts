@@ -7,7 +7,10 @@ const register = async (username: string, password: string) => {
       algorithm: "bcrypt",
       cost: 10, // salt
     });
-    const exitUser = await postgreClient.query("SELECT * FROM users");
+    const exitUser = await postgreClient.query(
+      "SELECT * FROM users WHERE username = $1",
+      [username]
+    );
     if (exitUser.rows.length > 0) {
       return {
         status: "error",
