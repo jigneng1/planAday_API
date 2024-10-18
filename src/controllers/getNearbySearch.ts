@@ -16,20 +16,6 @@ export const getNearbySearch = async (
   // Your Google Maps API Key
   const apiKey = "AIzaSyBKTx5neg3VzAsPMzpEDffGwXROdayD28M";
 
-  const data = {
-    includedTypes: category,
-    maxResultCount: 20,
-    locationRestriction: {
-      circle: {
-        center: {
-          latitude: lad,
-          longitude: lng,
-        },
-        radius: 3000,
-      },
-    },
-  };
-
   // Headers for the request
   const headers = {
     "Content-Type": "application/json",
@@ -41,14 +27,41 @@ export const getNearbySearch = async (
   // Construct the Google Maps Places API URL
   const url = "https://places.googleapis.com/v1/places:searchNearby";
 
+  async function getNearbySearch(lad: string, lng: string, category: string) {
+    // Your Google Maps API Key
+    const response = await axios.post(
+      url,
+      {
+        includedTypes: [category],
+        rankPreference: "DISTANCE",
+        locationRestriction: {
+          circle: {
+            center: {
+              latitude: lad,
+              longitude: lng,
+            },
+            radius: 3000,
+          },
+        },
+      },
+      {
+        headers,
+      }
+    );
+    return response;
+  }
   try {
-    const response = await axios.post(url, data, {
-      headers,
-    });
+    // Fetch the data from Google Maps Places API
+    const placePool: any = [];
 
-    const availablePlace = response.data.places.filter((place: IPlaceItem) => {
+    for (const cat of category) {
+      const response = await getNearbySearch(lad, lng, cat);
+      placePool.push(...response.data.places);
+    }
+
+    const availablePlace = placePool.filter((place: IPlaceItem) => {
       if (!place.regularOpeningHours) {
-        console.log("no regular opening hours", place.displayName.text);
+        return true;
       } else {
         return isPlaceOpenAtTime(
           place.regularOpeningHours.periods,
