@@ -21,13 +21,6 @@ const getNewPlace = async (placeID: string, placesList: string[]) => {
     const place_location = placeDetail_response.data.location;
 
     // Get nearby places
-    const nearbySearch_headers = {
-      "Content-Type": "application/json",
-      "X-Goog-Api-Key": apiKey,
-      "X-Goog-FieldMask":
-        "places.id,places.displayName,places.primaryType,places.shortFormattedAddress,places.photos",
-    };
-
     const nearby_data = {
       includedTypes: [placeDetail_response.data.primaryType],
       maxResultCount: 5,

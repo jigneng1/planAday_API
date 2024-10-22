@@ -33,7 +33,7 @@ export const getNearbySearch = async (
       url,
       {
         includedTypes: [category],
-        rankPreference: "DISTANCE",
+        //rankPreference: "DISTANCE",
         locationRestriction: {
           circle: {
             center: {
