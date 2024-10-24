@@ -46,7 +46,7 @@ app
   .use(
     jwt({
       secret: process.env.JWT_SECRET!,
-      expiresIn: "1h",
+      exp: "1h",
     })
   )
   .use(bearer())
