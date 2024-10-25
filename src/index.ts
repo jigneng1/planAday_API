@@ -68,6 +68,7 @@ app
       }
       const getToken = await jwt.sign({ username: getUsername });
       return {
+        status : "success",
         message: "Login success",
         token: getToken,
       };
