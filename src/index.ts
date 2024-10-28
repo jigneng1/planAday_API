@@ -17,6 +17,7 @@ import { IPlanMongo } from "./mongoose/planGenerateModel";
 import createGeneratePlan from "./controllers/createGeneratePlan";
 import createpublicPlan from "./controllers/createpublicPlan";
 import getSuggestPlan from "./controllers/getsuggestPlan";
+import getPlanDetailById from "./controllers/getPlanDetailById";
 
 // check ENV
 if (!process.env.JWT_SECRET) {
@@ -245,6 +246,10 @@ app
           }
           const { userId } = checkAuth;
           return getSuggestPlan(userId.toString());
+        })
+
+        .get("/getPlanDetailByid/:plan_id", ({ params: { plan_id } }) => {
+          return getPlanDetailById(plan_id);
         })
   )
   .listen(3000, () => {
