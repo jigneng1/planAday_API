@@ -18,6 +18,8 @@ import createGeneratePlan from "./controllers/createGeneratePlan";
 import createpublicPlan from "./controllers/createpublicPlan";
 import getSuggestPlan from "./controllers/getsuggestPlan";
 import getPlanDetailById from "./controllers/getPlanDetailById";
+import getUserDetail from "./controllers/getUserDetail";
+import getPlanHistory from "./controllers/getPlanHistory";
 
 // check ENV
 if (!process.env.JWT_SECRET) {
@@ -99,7 +101,7 @@ app
       }
       const getToken = await jwt.sign({ userId: getUserId });
       return {
-        status : "success",
+        status: "success",
         message: "Login success",
         token: getToken,
       };
@@ -251,6 +253,20 @@ app
 
         .get("/getPlanDetailByid/:plan_id", ({ params: { plan_id } }) => {
           return getPlanDetailById(plan_id);
+        })
+        .get("/userDetail", ({ checkAuth }) => {
+          if (!checkAuth) {
+            return error(401, "Unauthorized");
+          }
+          const { userId } = checkAuth;
+          return getUserDetail(userId.toString());
+        })
+        .get("/getPlanHistory", ({ checkAuth }) => {
+          if (!checkAuth) {
+            return error(401, "Unauthorized");
+          }
+          const { userId } = checkAuth;
+          return getPlanHistory(userId.toString());
         })
   )
   .listen(3000, () => {
