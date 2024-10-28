@@ -208,20 +208,25 @@ app
         .post(
           "/createPlan",
           ({ body, checkAuth }) => {
-            const { places } = body;
+            const data = body;
             if (!checkAuth) {
               return error(401, "Unauthorized");
             }
             const { userId } = checkAuth;
-            return createGeneratePlan({ places }, userId.toString());
+            return createGeneratePlan(data, userId.toString());
           },
           {
             body: t.Object({
-              places: t.Array(
+              planName: t.String(),
+              startTime: t.String(),
+              startDate: t.String(),
+              category: t.Array(t.String()),
+              numberOfPlaces: t.Number(),
+              planID: t.String(),
+              selectedPlaces: t.Array(
                 t.Object({
                   id: t.String(),
                   displayName: t.String(),
-                  primaryType: t.String(),
                   shortFormattedAddress: t.String(),
                   photosUrl: t.String(),
                 })
