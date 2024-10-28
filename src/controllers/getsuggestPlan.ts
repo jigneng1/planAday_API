@@ -15,27 +15,32 @@ const getSuggestPlan = async (userId: string) => {
     }
 
     // get plan detail from mongo by plan_id
-    const getPlan = await planGenerateModel.findById(
-      getpublicPlansFromOtherUsers.rows[0].plan_id
+    // เปลี่ยนเป็น promise.all()
+
+    const getPlan = await Promise.all(
+      getpublicPlansFromOtherUsers.rows.map(async (plan) => {
+        const response = await planGenerateModel.findById(plan.plan_id);
+        return {
+          planId: response!._id,
+          planName: response!.planName,
+          numberofPlaces: response!.numberOfPlaces,
+          category: response!.category,
+          imageURL: response!.selectedPlaces[0].photosUrl,
+        };
+      })
     );
 
-    const uniqueType = [
-      ...new Set(getPlan?.places.map((place) => place.primaryType)),
-    ];
-
-    const formattedResponse = getpublicPlansFromOtherUsers.rows.map((plan) => {
+    if (!getPlan) {
       return {
-        plan_id: plan.plan_id,
-        place_num: getPlan?.places.length,
-        uniqueType: uniqueType,
-        imageURL: getPlan?.places[0].photosUrl,
+        success: false,
+        message: "Plan not found",
       };
-    });
+    }
 
     // return category and plan
     return {
       success: true,
-      plansList: formattedResponse,
+      plansList: getPlan,
     };
   } catch (error) {
     return {

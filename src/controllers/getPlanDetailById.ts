@@ -9,10 +9,7 @@ const getPlanDetailById = async (plan_id: string) => {
         message: "No plan found",
       };
     }
-    return {
-      success: true,
-      plan: getPlan,
-    };
+    return getPlan.toJSON();
   } catch (error) {
     return {
       success: false,
