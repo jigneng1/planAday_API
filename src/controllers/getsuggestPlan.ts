@@ -10,7 +10,7 @@ const getSuggestPlan = async (userId: string) => {
     if (getpublicPlansFromOtherUsers.rows.length === 0) {
       return {
         success: false,
-        message: "No public plan found",
+        plansList: [],
       };
     }
 
@@ -33,7 +33,7 @@ const getSuggestPlan = async (userId: string) => {
     if (!getPlan) {
       return {
         success: false,
-        message: "Plan not found",
+        plansList: [],
       };
     }
 
