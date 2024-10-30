@@ -12,14 +12,14 @@ import register from "./controllers/auth/register";
 import login from "./controllers/auth/login";
 import jwt from "@elysiajs/jwt";
 import { bearer } from "@elysiajs/bearer";
-import mongoose, { get, mongo } from "mongoose";
-import { IPlanMongo } from "./mongoose/planGenerateModel";
+import mongoose from "mongoose";
 import createGeneratePlan from "./controllers/createGeneratePlan";
 import createpublicPlan from "./controllers/createpublicPlan";
 import getSuggestPlan from "./controllers/getsuggestPlan";
 import getPlanDetailById from "./controllers/getPlanDetailById";
 import getUserDetail from "./controllers/getUserDetail";
 import getPlanHistory from "./controllers/getPlanHistory";
+import deletePlan from "./controllers/deletePlan";
 
 // check ENV
 if (!process.env.JWT_SECRET) {
@@ -78,7 +78,7 @@ app
   .use(
     jwt({
       secret: process.env.JWT_SECRET!,
-      exp: "1h",
+      exp: "1d",
     })
   )
   .use(bearer())
@@ -227,6 +227,7 @@ app
                 t.Object({
                   id: t.String(),
                   displayName: t.String(),
+                  primaryType: t.String(),
                   shortFormattedAddress: t.String(),
                   photosUrl: t.String(),
                 })
@@ -272,6 +273,9 @@ app
           }
           const { userId } = checkAuth;
           return getPlanHistory(userId.toString());
+        })
+        .delete("/deletePlan/:plan_id", ({ params: { plan_id } }) => {
+          return deletePlan(plan_id);
         })
   )
   .listen(3000, () => {
