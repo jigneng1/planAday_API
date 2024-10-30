@@ -12,10 +12,30 @@ import register from "./controllers/auth/register";
 import login from "./controllers/auth/login";
 import jwt from "@elysiajs/jwt";
 import { bearer } from "@elysiajs/bearer";
+import mongoose, { get, mongo } from "mongoose";
+import { IPlanMongo } from "./mongoose/planGenerateModel";
+import createGeneratePlan from "./controllers/createGeneratePlan";
+import createpublicPlan from "./controllers/createpublicPlan";
+import getSuggestPlan from "./controllers/getsuggestPlan";
+import getPlanDetailById from "./controllers/getPlanDetailById";
+import getUserDetail from "./controllers/getUserDetail";
+import getPlanHistory from "./controllers/getPlanHistory";
 
 // check ENV
 if (!process.env.JWT_SECRET) {
   console.error("JWT_SECRET is required");
+  process.exit(1);
+}
+if (!process.env.REDIS_URL) {
+  console.error("REDIS_URL is required");
+  process.exit(1);
+}
+if (!process.env.DATABASE_URL) {
+  console.error("DATABASE_URL is required");
+  process.exit(1);
+}
+if (!process.env.MONGODB_URL) {
+  console.error("MONGODB_URI is required");
   process.exit(1);
 }
 
@@ -39,6 +59,18 @@ await postgreClient
     console.error("Error connecting to PostgreSQL", err);
     process.exit(1);
   });
+
+// Connect to MongoDB
+await mongoose
+  .connect(process.env.MONGODB_URL)
+  .then(() => {
+    console.log("🍃 Connected to MongoDB");
+  })
+  .catch((err) => {
+    console.error("Error connecting to MongoDB", err);
+    process.exit(1);
+  });
+
 const app = new Elysia();
 // Use Swagger
 app
@@ -52,6 +84,7 @@ app
   .use(bearer())
   .derive(async ({ jwt, bearer }) => {
     const checkAuth = await jwt.verify(bearer);
+    console.log("checkAuth", checkAuth);
     return {
       checkAuth,
     };
@@ -62,13 +95,13 @@ app
     "/login",
     async ({ jwt, body }) => {
       const { username, password } = body;
-      const getUsername = await login(username, password);
-      if (getUsername.status === "error") {
-        return error(400, getUsername);
+      const getUserId = await login(username, password);
+      if (getUserId.status === "error") {
+        return error(400, getUserId);
       }
-      const getToken = await jwt.sign({ username: getUsername });
+      const getToken = await jwt.sign({ userId: getUserId });
       return {
-        status : "success",
+        status: "success",
         message: "Login success",
         token: getToken,
       };
@@ -172,6 +205,74 @@ app
             }),
           }
         )
+        .post(
+          "/createPlan",
+          ({ body, checkAuth }) => {
+            const data = body;
+            if (!checkAuth) {
+              return error(401, "Unauthorized");
+            }
+            const { userId } = checkAuth;
+            return createGeneratePlan(data, userId.toString());
+          },
+          {
+            body: t.Object({
+              planName: t.String(),
+              startTime: t.String(),
+              startDate: t.String(),
+              category: t.Array(t.String()),
+              numberOfPlaces: t.Number(),
+              planID: t.String(),
+              selectedPlaces: t.Array(
+                t.Object({
+                  id: t.String(),
+                  displayName: t.String(),
+                  shortFormattedAddress: t.String(),
+                  photosUrl: t.String(),
+                })
+              ),
+            }),
+          }
+        )
+
+        .post(
+          "/createpublicPlan",
+          ({ body }) => {
+            const { planId } = body;
+            return createpublicPlan(planId);
+          },
+          {
+            body: t.Object({
+              planId: t.String(),
+            }),
+          }
+        )
+
+        .get("/suggestPlan", ({ checkAuth }) => {
+          if (!checkAuth) {
+            return error(401, "Unauthorized");
+          }
+          const { userId } = checkAuth;
+          return getSuggestPlan(userId.toString());
+        })
+
+        .get("/getPlanDetailByid/:plan_id", ({ params: { plan_id } }) => {
+          return getPlanDetailById(plan_id);
+        })
+        .get("/userDetail", ({ checkAuth }) => {
+          if (!checkAuth) {
+            return error(401, "Unauthorized");
+          }
+          const { userId } = checkAuth;
+          return getUserDetail(userId.toString());
+        })
+        .get("/getPlanHistory", ({ checkAuth }) => {
+          if (!checkAuth) {
+            return error(401, "Unauthorized");
+          }
+          const { userId } = checkAuth;
+          return getPlanHistory(userId.toString());
+        })
   )
   .listen(3000, () => {
     console.log(

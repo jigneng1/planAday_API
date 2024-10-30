@@ -15,6 +15,8 @@
     "axios": "^1.7.5",
     "elysia": "latest",
     "jest": "^29.7.0",
+    "mongodb": "^6.10.0",
+    "mongoose": "^8.7.2",
     "pg": "^8.13.0",
     "redis": "^4.7.0",
     "ts-jest": "^29.2.5",

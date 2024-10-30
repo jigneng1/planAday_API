@@ -26,7 +26,7 @@ const login = async (username: string, password: string) => {
       };
     }
 
-    return findUser.rows[0].username;
+    return findUser.rows[0].id;
   } catch (error) {
     return {
       status: "error",
