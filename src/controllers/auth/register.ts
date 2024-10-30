@@ -18,7 +18,7 @@ const register = async (username: string, password: string) => {
       };
     }
     await postgreClient.query(
-      "INSERT INTO users (id ,username, password) VALUES ($1, $2, $3)",
+      "INSERT INTO users (id, username, password) VALUES ($1, $2, $3)",
       [crypto.randomUUID(), username, bcryptHash]
     );
     return {
