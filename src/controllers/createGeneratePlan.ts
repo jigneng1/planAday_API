@@ -15,6 +15,7 @@ const createGeneratePlan = async (
     );
     return {
       success: true,
+      planId: savePlan._id,
       message: "Plan generated successfully",
     };
   } catch (error) {
