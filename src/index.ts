@@ -20,6 +20,8 @@ import getPlanDetailById from "./controllers/getPlanDetailById";
 import getUserDetail from "./controllers/getUserDetail";
 import getPlanHistory from "./controllers/getPlanHistory";
 import deletePlan from "./controllers/deletePlan";
+import createBookmark from "./controllers/createBookmark";
+import deleteBookmark from "./controllers/deleteBookmark";
 
 // check ENV
 if (!process.env.JWT_SECRET) {
@@ -277,6 +279,29 @@ app
         .delete("/deletePlan/:plan_id", ({ params: { plan_id } }) => {
           return deletePlan(plan_id);
         })
+        // Bookmark
+        .post(
+          "createBookmark/:plan_id",
+          ({ checkAuth, params: { plan_id } }) => {
+            if (!checkAuth) {
+              return error(401, "Unauthorized");
+            }
+            const { userId } = checkAuth;
+            return createBookmark(userId.toString(), plan_id);
+          }
+        )
+        .delete(
+          "deleteBookmark/:plan_id",
+          ({ checkAuth, params: { plan_id } }) => {
+            if (!checkAuth) {
+              return error(401, "Unauthorized");
+            }
+            const { userId } = checkAuth;
+            return deleteBookmark(userId.toString(), plan_id);
+          }
+        )
+
+        // Interest Create, Get , Update if don't choose select all category
   )
   .listen(3000, () => {
     console.log(
