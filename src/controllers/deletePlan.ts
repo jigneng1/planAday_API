@@ -10,6 +10,9 @@ const deletePlan = async (plan_id: string) => {
     await postgreClient.query("DELETE FROM users_plans WHERE plan_id = ($1)", [
       plan_id,
     ]);
+    await postgreClient.query("DELETE FROM bookmarks WHERE plan_id = ($1)", [
+      plan_id,
+    ]);
     // Delete Plan from Mongo
     await planGenerateModel.findByIdAndDelete(plan_id);
     return {
