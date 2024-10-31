@@ -20,6 +20,12 @@ import getPlanDetailById from "./controllers/getPlanDetailById";
 import getUserDetail from "./controllers/getUserDetail";
 import getPlanHistory from "./controllers/getPlanHistory";
 import deletePlan from "./controllers/deletePlan";
+import createBookmark from "./controllers/createBookmark";
+import deleteBookmark from "./controllers/deleteBookmark";
+import createInterest from "./controllers/createInterest";
+import updateInterest from "./controllers/updateInterest";
+import getInterest from "./controllers/getInterest";
+import getPlanByInterest from "./controllers/getPlanByInterest";
 
 // check ENV
 if (!process.env.JWT_SECRET) {
@@ -277,6 +283,81 @@ app
         .delete("/deletePlan/:plan_id", ({ params: { plan_id } }) => {
           return deletePlan(plan_id);
         })
+        // Bookmark
+        .post(
+          "createBookmark/:plan_id",
+          ({ checkAuth, params: { plan_id } }) => {
+            if (!checkAuth) {
+              return error(401, "Unauthorized");
+            }
+            const { userId } = checkAuth;
+            return createBookmark(userId.toString(), plan_id);
+          }
+        )
+        .delete(
+          "deleteBookmark/:plan_id",
+          ({ checkAuth, params: { plan_id } }) => {
+            if (!checkAuth) {
+              return error(401, "Unauthorized");
+            }
+            const { userId } = checkAuth;
+            return deleteBookmark(userId.toString(), plan_id);
+          }
+        )
+
+        // Interest Create, Get , Update if don't choose select all category
+        .get("/getInterest", ({ checkAuth }) => {
+          if (!checkAuth) {
+            return error(401, "Unauthorized");
+          }
+          const { userId } = checkAuth;
+          return getInterest(userId.toString());
+        })
+        .post(
+          "/createInterest",
+          ({ body, checkAuth }) => {
+            const { interest } = body;
+            if (!checkAuth) {
+              return error(401, "Unauthorized");
+            }
+            const { userId } = checkAuth;
+            return createInterest(userId.toString(), interest);
+          },
+          {
+            body: t.Object({
+              interest: t.Array(t.String()),
+            }),
+          }
+        )
+
+        .put(
+          "/updateInterest",
+          ({ body, checkAuth }) => {
+            const { interest } = body;
+            if (!checkAuth) {
+              return error(401, "Unauthorized");
+            }
+            const { userId } = checkAuth;
+            return updateInterest(userId.toString(), interest);
+          },
+          {
+            body: t.Object({
+              interest: t.Array(t.String()),
+            }),
+          }
+        )
+
+        // Get Plan By Interest
+        .get(
+          "/getPlanByInterest/:category",
+          ({ params: { category }, checkAuth }) => {
+            if (!checkAuth) {
+              return error(401, "Unauthorized");
+            }
+            const { userId } = checkAuth;
+            return getPlanByInterest(userId.toString(), category);
+          }
+        )
   )
   .listen(3000, () => {
     console.log(
