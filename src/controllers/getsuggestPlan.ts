@@ -1,10 +1,12 @@
 import { postgreClient } from "..";
 import planGenerateModel from "../mongoose/planGenerateModel";
 
+// เอา Public Plan จาก user อื่นมาแสดง filter Plan ที่ Bookmarks ไปแล้วออก
+
 const getSuggestPlan = async (userId: string) => {
   try {
     const getpublicPlansFromOtherUsers = await postgreClient.query(
-      "SELECT pp.plan_id FROM users_plans AS up INNER JOIN public_plan AS pp ON up.plan_id = pp.plan_id WHERE user_id != ($1)",
+      "SELECT pp.plan_id FROM users_plans AS up INNER JOIN public_plan AS pp ON up.plan_id = pp.plan_id WHERE up.user_id != $1 AND pp.plan_id NOT IN (SELECT plan_id FROM bookmarks WHERE user_id = $1)",
       [userId]
     );
     if (getpublicPlansFromOtherUsers.rows.length === 0) {
