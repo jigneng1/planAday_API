@@ -26,6 +26,7 @@ import createInterest from "./controllers/createInterest";
 import updateInterest from "./controllers/updateInterest";
 import getInterest from "./controllers/getInterest";
 import getPlanByInterest from "./controllers/getPlanByInterest";
+import getBookmarkByUserId from "./controllers/getBookmark";
 
 // check ENV
 if (!process.env.JWT_SECRET) {
@@ -284,6 +285,13 @@ app
           return deletePlan(plan_id);
         })
         // Bookmark
+        .get("/getBookmark", ({ checkAuth }) => {
+          if (!checkAuth) {
+            return error(401, "Unauthorized");
+          }
+          const { userId } = checkAuth;
+          return getBookmarkByUserId(userId.toString());
+        })
         .post(
           "createBookmark/:plan_id",
           ({ checkAuth, params: { plan_id } }) => {
