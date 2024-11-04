@@ -3,7 +3,7 @@ import { postgreClient } from "..";
 const getUserDetail = async (userId: string) => {
   try {
     const getUser = await postgreClient.query(
-      "SELECT id,username FROM users WHERE id = ($1)",
+      "SELECT id, username FROM users WHERE id = ($1)",
       [userId]
     );
     if (getUser.rows.length === 0) {
