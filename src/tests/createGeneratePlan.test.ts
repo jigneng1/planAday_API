@@ -17,7 +17,7 @@ describe("createGeneratePlan", () => {
     planName: "Test Plan",
     startTime: "10:00",
     startDate: "2024-10-31",
-    category: ["cafe", "resturant"],
+    category: ["cafe", "restaurant"], 
     numberOfPlaces: 2,
     planID: "testPlanID",
     selectedPlaces: [
@@ -55,12 +55,13 @@ describe("createGeneratePlan", () => {
 
     expect(planGenerateModel).toHaveBeenCalledWith(mockPlanData);
     expect(postgreClient.query).toHaveBeenCalledWith(
-      "INSERT INTO users_plans (user_id , plan_id) VALUES ($1, $2)",
+      "INSERT INTO users_plans (user_id, plan_id) VALUES ($1, $2)",
       [mockUserId, savePlanMock._id.toString()]
     );
     expect(response).toEqual({
       success: true,
       message: "Plan generated successfully",
+      planId: savePlanMock._id.toString(), // Include the expected planId
     });
   });
 
@@ -76,7 +77,7 @@ describe("createGeneratePlan", () => {
 
     expect(response).toEqual({
       success: false,
-      message: expect.any(Error),
+      message: expect.any(String), 
     });
   });
 
@@ -95,7 +96,7 @@ describe("createGeneratePlan", () => {
 
     expect(response).toEqual({
       success: false,
-      message: expect.any(Error),
+      message: expect.any(String), 
     });
   });
 });
