@@ -121,7 +121,7 @@ export const getNearbySearch = async (
   } catch (error: any) {
     return {
       status: "error",
-      message: error || "something went wrong",
+      message: error.message || "something went wrong",
     };
   }
 };
