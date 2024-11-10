@@ -1,4 +1,5 @@
 import { postgreClient } from "../..";
+import createInterest from "../createInterest";
 
 const register = async (username: string, password: string) => {
   // use bcrypt
@@ -17,10 +18,16 @@ const register = async (username: string, password: string) => {
         message: "User already exist",
       };
     }
+
+    const userId = crypto.randomUUID();
+
     await postgreClient.query(
       "INSERT INTO users (id ,username, password) VALUES ($1, $2, $3)",
-      [crypto.randomUUID(), username, bcryptHash]
+      [userId, username, bcryptHash]
     );
+
+    await createInterest(userId, ["restaurant", "cafe"]);
+
     return {
       status: "success",
       message: "User created successfully",
