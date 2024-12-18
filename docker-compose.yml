@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  app:
+    image: "{IMAGE_NAME}" # OR your replace with docker registry image
+    container_name: "${CONTAINER_NAME}"
+    ports:
+      - "${DOCKER_PORT}:3000"
+    environment:
+      - REDIS_URL=${REDIS_URL}
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - MONGODB_URL=${MONGODB_URL}
+    restart: unless-stopped
