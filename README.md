@@ -1,6 +1,7 @@
 # PlanAday-WebAPI
 
 ## Prerequisites
+- OS : Debians
 - Bun environment https://bun.sh/docs/installation
 - Docker CLI https://docs.docker.com/get-started/
 
